@@ -2,11 +2,7 @@ using SMSService.Interfaces;
 using SMSService.Logging;
 using SMSService.Snippets;
 
-internal class Program
-{
-    private static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
         // Define file for logging
         builder.Logging.AddFile(Path.Combine(Directory.GetCurrentDirectory(), "logger.txt"));
@@ -20,7 +16,19 @@ internal class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        var app = builder.Build();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        });
+});
+
+var app = builder.Build();
 
         app.Run(async (context) =>
         {
@@ -64,8 +72,9 @@ internal class Program
         });
 
         app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
-        app.UseAuthorization();
+app.UseAuthorization();
 
         app.MapControllers();
 
@@ -78,5 +87,3 @@ internal class Program
 
             await socketFinishedTcs.Task;
         });
-    }
-}
